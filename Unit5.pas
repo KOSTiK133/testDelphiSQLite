@@ -1,0 +1,115 @@
+unit Unit5;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DB, Data.DBXMySQL, Data.SqlExpr,
+  Datasnap.DBClient, SimpleDS, Vcl.Menus, Vcl.Grids, Vcl.DBGrids, Data.FMTBcd,
+  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf,
+  FireDAC.Phys.Intf, FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async,
+  FireDAC.Phys, FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef,
+  FireDAC.Stan.ExprFuncs, FireDAC.VCLUI.Wait, FireDAC.Stan.Param, FireDAC.DatS,
+  FireDAC.DApt.Intf, FireDAC.DApt, FireDAC.Comp.DataSet, FireDAC.Comp.Client;
+
+type
+  TForm5 = class(TForm)
+    DBGrid1: TDBGrid;
+    MainMenu1: TMainMenu;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    DataSource1: TDataSource;
+    FDConnection1: TFDConnection;
+    FDTable1: TFDTable;
+    FDQuery1: TFDQuery;
+    FDTable1id: TFDAutoIncField;
+    FDTable1name: TWideMemoField;
+    procedure N3Click(Sender: TObject);
+    procedure N4Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure N7Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form5: TForm5;
+
+implementation
+     uses unit1;
+{$R *.dfm}
+
+procedure TForm5.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  // Form1.SimpleDataSet1.ApplyUpdates(-1);
+   Form1.FDQuery2.Refresh();
+end;
+
+procedure TForm5.FormCreate(Sender: TObject);
+begin
+   FDConnection1.DriverName:='SQLite';
+   FDConnection1.Params.Database := 'test.db';
+   FDConnection1.Connected:=True;
+    FDTable1.Active:=True;
+   //FDQuery1.Active:=True;
+
+end;
+
+procedure TForm5.N3Click(Sender: TObject);
+var name:string;
+begin
+name:=InputBox('Добавление организации','Введите название организации','');
+if FDConnection1.Connected then
+begin
+FDQuery1.SQL.Clear();
+    FDQuery1.SQL.Add('INSERT INTO organization(name) VALUES ('''+name+''')');
+    FDQuery1.ExecSQL(true);
+   // FDTable1.ApplyUpdates(-1);
+    FDTable1.Refresh();
+    end;
+end;
+
+procedure TForm5.N4Click(Sender: TObject);
+var id:integer;
+begin
+  if FDConnection1.Connected then
+begin
+id:=DBGrid1.DataSource.DataSet.FieldByName('id').AsInteger;;
+FDQuery1.SQL.Clear();
+    FDQuery1.SQL.Add('DELETE FROM organization WHERE id='+IntToStr(id));
+    FDQuery1.ExecSQL(true);
+   // FDTable1.ApplyUpdates(-1);
+    FDTable1.Refresh();
+    end;
+end;
+
+
+procedure TForm5.N5Click(Sender: TObject);
+var id:integer;
+name,lastName:string;
+begin
+if FDConnection1.Connected then
+begin
+lastName:=DBGrid1.DataSource.DataSet.FieldByName('name').AsString;
+name:=InputBox('Изменить','Введите новое имя организации',lastName);
+id:=DBGrid1.DataSource.DataSet.FieldByName('id').AsInteger;;
+FDQuery1.SQL.Clear();
+    FDQuery1.SQL.Add('UPDATE `organization` SET `name`='''+name+''' WHERE `id`='+IntToStr(id));
+    FDQuery1.ExecSQL(true);
+    //FDTable1.ApplyUpdates(-1);
+    FDTable1.Refresh();
+    end;
+end;
+
+procedure TForm5.N7Click(Sender: TObject);
+begin
+close;
+end;
+
+end.

@@ -1,0 +1,160 @@
+unit Unit1;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Data.DBXMySQL, Data.SqlExpr, Data.DB,
+  Data.Win.ADODB, Vcl.Grids, Vcl.DBGrids, Datasnap.DBClient, SimpleDS,
+  Vcl.ExtCtrls, Vcl.DBCtrls, Vcl.Menus, Data.FMTBcd, FireDAC.Stan.Intf,
+  FireDAC.Stan.Option, FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf,
+  FireDAC.Stan.Def, FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys,
+  FireDAC.Phys.SQLite, FireDAC.Phys.SQLiteDef, FireDAC.Stan.ExprFuncs,
+  FireDAC.VCLUI.Wait, FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf,
+  FireDAC.DApt, Vcl.Bind.Grid, System.Rtti, System.Bindings.Outputs,
+  Vcl.Bind.Editors, Data.Bind.EngExt, Vcl.Bind.DBEngExt, Data.Bind.Components,
+  Data.Bind.Grid, Data.Bind.DBScope, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  Data.Bind.Controls, Vcl.Buttons, Vcl.Bind.Navigator;
+
+type
+  TForm1 = class(TForm)
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N4: TMenuItem;
+    N5: TMenuItem;
+    N6: TMenuItem;
+    N7: TMenuItem;
+    N8: TMenuItem;
+    N9: TMenuItem;
+    N10: TMenuItem;
+    N11: TMenuItem;
+    pdf1: TMenuItem;
+    FDConnection1: TFDConnection;
+    FDQuery1: TFDQuery;
+    DataSource1: TDataSource;
+    DBGrid1: TDBGrid;
+    FDQuery2: TFDQuery;
+    FDQuery2id: TFDAutoIncField;
+    FDQuery2keyOrganization: TWideMemoField;
+    FDQuery2DateStart: TWideMemoField;
+    FDQuery2DateEnd: TWideMemoField;
+    FDQuery2name: TWideMemoField;
+    FDQuery2isBlocked: TIntegerField;
+    procedure N2Click(Sender: TObject);
+    procedure N4Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+    procedure N6Click(Sender: TObject);
+    procedure N8Click(Sender: TObject);
+    procedure N7Click(Sender: TObject);
+    procedure N11Click(Sender: TObject);
+    procedure N9Click(Sender: TObject);
+    procedure pdf1Click(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+uses unit3,unit4,unit5, Unit6;
+
+
+{$R *.dfm}
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+    FDConnection1.DriverName:='SQLite';
+   FDConnection1.Params.Database := 'test.db';
+   FDConnection1.Connected:=True;
+   FDQuery2.Active:=True;
+end;
+
+procedure TForm1.N11Click(Sender: TObject);
+begin
+FDQuery2.Filter:='';
+FDQuery2.Filtered:=false;
+end;
+
+procedure TForm1.N2Click(Sender: TObject);
+var f:word;
+begin
+f:=Form5.ShowModal();
+end;
+
+procedure TForm1.N4Click(Sender: TObject);
+var f:word;
+begin
+Form3.Caption:='Добавить';
+Form3.Button1.Hide;
+Form3.add.Show;
+f:=Form3.ShowModal();
+
+end;
+
+procedure TForm1.N5Click(Sender: TObject);
+var f:word;
+data:TbookmarkList;
+begin
+
+Unit3.id:= DBGrid1.DataSource.DataSet.FieldByName('id').AsInteger;
+Form3.key.Text:=DBGrid1.DataSource.DataSet.FieldByName('keyOrganization').AsString;
+Form3.DateStart.Date:= StrToDateTime(DBGrid1.DataSource.DataSet.FieldByName('DateStart').AsString);
+Form3.DateEnd.Date:= StrToDateTime(DBGrid1.DataSource.DataSet.FieldByName('DateEnd').AsString);
+Form3.Organisation.ItemIndex:=Form3.Organisation.Items.IndexOf(DBGrid1.DataSource.DataSet.FieldByName('name').AsString);
+if  DBGrid1.DataSource.DataSet.FieldByName('isBlocked').AsInteger=1 then
+ Form3.CheckBox1.Checked:=true
+ else    Form3.CheckBox1.Checked:=false;
+Form3.Caption:='Изменить';
+Form3.add.Hide();
+Form3.Button1.Show;
+f:=Form3.ShowModal();
+
+
+end;
+
+procedure TForm1.N6Click(Sender: TObject);
+var id:integer;
+begin
+  id:=DBGrid1.DataSource.DataSet.FieldByName('id').AsInteger;
+  if FDConnection1.Connected then
+begin
+FDQuery1.SQL.Clear();
+FDQuery1.SQL.Add('DELETE from keys where id = '+IntTostr(id));
+FDQuery1.ExecSQL(true);
+//FDQuery2.ApplyUpdates(-1);
+FDQuery2.Refresh();
+end;
+
+end;
+
+procedure TForm1.N7Click(Sender: TObject);
+begin
+Form4.ShowModal();
+end;
+
+procedure TForm1.N8Click(Sender: TObject);
+var s:string;
+begin
+s:=InputBox('поиск по ключу','Введите ключ','');
+FDQuery2.Locate('keyOrganization',s,[]);
+end;
+
+procedure TForm1.N9Click(Sender: TObject);
+begin
+Form6.Show;
+Form6.frxReport1.ShowReport(True);
+end;
+
+procedure TForm1.pdf1Click(Sender: TObject);
+begin
+Form6.frxReport1.ShowReport(True);
+Form6.frxReport1.Export(Form6.frxPDFExport1);
+end;
+
+end.
